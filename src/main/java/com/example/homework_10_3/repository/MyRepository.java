@@ -1,12 +1,9 @@
 package com.example.homework_10_3.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,19 +15,15 @@ import java.util.stream.Collectors;
 
 @Repository
 public class MyRepository {
-
-    @Autowired
-    private DataSource dataSource;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     private String scriptFileName = "myScript.sql";
 
-    public MyRepository() {
+    private String script;
+
+    public MyRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+        this.script = read(scriptFileName);
 
     }
 
@@ -48,11 +41,7 @@ public class MyRepository {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("name", name);
 
-        List<String> products = namedParameterJdbcTemplate.query(read(scriptFileName), parameters,
-                (resultSet, rowNum) -> {
-                    String product_name = resultSet.getString(1);
-                    return product_name;
-                });
+        List<String> products = namedParameterJdbcTemplate.queryForList(script, parameters, String.class);
         return products;
     }
 }
